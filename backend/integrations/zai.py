@@ -26,7 +26,7 @@ async def call_zai(
     messages: List[Dict[str, str]],
     system_prompt: str = "",
     temperature: float = 0.7,
-    max_tokens: int = 2000
+    max_tokens: int = 4096
 ) -> str:
     """
     Core Z.AI GLM call. All agents route through here.

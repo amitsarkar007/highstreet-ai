@@ -1,13 +1,14 @@
 from langgraph.graph import StateGraph, END
 from typing import TypedDict, Optional
 from integrations.zai import set_fallback_used, get_fallback_used
-from agents.orchestrator import run_orchestrator
+from agents.orchestrator import run_orchestrator, run_orchestrator_assess
 from agents.operations_agent import run_operations_agent
 from agents.adoption_agent import run_adoption_agent
 from agents.hr_agent import run_hr_agent
 from agents.market_intelligence_agent import run_market_intelligence_agent
 from agents.reviewer import run_reviewer
 from integrations.anyway import trace
+import json
 import uuid
 
 class PipelineState(TypedDict):
@@ -103,6 +104,105 @@ def build_pipeline():
     return graph.compile()
 
 
+async def run_conversation_turn(
+    message: str,
+    conversation_id: str | None,
+    context: dict = {},
+) -> "QueryResponse":
+    from store.conversations import (
+        create_conversation, get_conversation, update_conversation,
+    )
+    from schemas.conversation import Message, QueryResponse
+    from agents.guardrails import check_guardrails
+
+    if conversation_id:
+        conv = get_conversation(conversation_id)
+        if not conv:
+            conv = create_conversation()
+    else:
+        conv = create_conversation()
+
+    conv.messages.append(Message(role="user", content=message))
+    conv.turn_count += 1
+    conv.context.update(context)
+
+    # STEP 1: Guardrails — before anything else
+    guardrail_result = await check_guardrails(message, conv.messages)
+
+    if guardrail_result["triggered"]:
+        conv.status = "guardrail_triggered"
+        update_conversation(conv)
+        return QueryResponse(
+            conversation_id=conv.conversation_id,
+            status="guardrail_triggered",
+            guardrail_message=guardrail_result["safe_response"],
+            guardrail_type=guardrail_result["type"],
+        )
+
+    # STEP 2: Orchestrator assesses context sufficiency
+    history = [{"role": m.role, "content": m.content} for m in conv.messages[:-1]]
+    assessment = await run_orchestrator_assess(message, history, conv.context)
+
+    if assessment.get("detected_sector"):
+        conv.context["sector"] = assessment["detected_sector"]
+    if assessment.get("detected_role"):
+        conv.context["role"] = assessment["detected_role"]
+
+    # STEP 3A: Need clarification — return questions without running pipeline
+    if assessment["mode"] == "needs_clarification" and conv.turn_count <= 2:
+        conv.status = "clarifying"
+
+        questions = assessment.get("clarifying_questions", [])
+        assistant_msg = (
+            "To give you the most relevant advice, "
+            "I have a couple of quick questions:\n\n"
+        )
+        for i, q in enumerate(questions, 1):
+            assistant_msg += f"{i}. {q['question']}\n"
+
+        conv.messages.append(Message(
+            role="assistant",
+            content=assistant_msg,
+            agent="orchestrator",
+        ))
+        update_conversation(conv)
+
+        return QueryResponse(
+            conversation_id=conv.conversation_id,
+            status="clarifying",
+            clarifying_questions=questions,
+        )
+
+    # STEP 3B: Sufficient context — run full pipeline
+    enriched_query = message
+    if conv.context:
+        enriched_query = (
+            f"{message}\n\nContext from conversation: {json.dumps(conv.context)}"
+        )
+
+    conv.status = "processing"
+    result = await run_pipeline(
+        query=enriched_query,
+        context=conv.context,
+        deploy=False,
+    )
+
+    summary = result.get("summary", result.get("answer", ""))
+    conv.messages.append(Message(
+        role="assistant",
+        content=summary,
+        agent=result.get("selected_agent"),
+    ))
+    conv.status = "complete"
+    update_conversation(conv)
+
+    return QueryResponse(
+        conversation_id=conv.conversation_id,
+        status="complete",
+        result=result,
+    )
+
+
 async def run_pipeline(query: str, context: dict = {}, deploy: bool = False) -> dict:
     set_fallback_used(False)
     pipeline = build_pipeline()
@@ -124,6 +224,8 @@ async def run_pipeline(query: str, context: dict = {}, deploy: bool = False) -> 
     result = final_state["final_result"] or {}
     result["query_id"] = final_state["query_id"]
     result["detected_business_type"] = orch.get("detected_business_type")
+    result["detected_sector_context"] = orch.get("detected_sector_context", "")
+    result["urgency"] = orch.get("urgency", "")
     result["detected_role"] = orch.get("detected_role")
     result["intent"] = orch.get("intent")
     result["selected_agent"] = orch.get("selected_agent")

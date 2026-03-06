@@ -1,4 +1,4 @@
-import type { AgentResult } from "./types";
+import type { AgentResult, ConversationResponse } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -46,16 +46,26 @@ async function fetchWithRetry(
 }
 
 export async function queryAgents(
-  query: string,
+  message: string,
+  conversationId?: string | null,
   context: Record<string, unknown> = {},
-  deploy = false
-): Promise<AgentResult> {
+): Promise<ConversationResponse> {
   const res = await fetchWithRetry(`${API_URL}/api/query`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query, context, deploy }),
+    body: JSON.stringify({
+      message,
+      conversation_id: conversationId ?? null,
+      context,
+    }),
   });
   return res.json();
+}
+
+export async function clearConversation(conversationId: string): Promise<void> {
+  await fetchWithRetry(`${API_URL}/api/conversation/${conversationId}`, {
+    method: "DELETE",
+  });
 }
 
 export async function getAgents() {

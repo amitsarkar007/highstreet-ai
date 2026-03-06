@@ -5,33 +5,11 @@ import re
 from typing import Optional
 
 
-def extract_json(raw: str) -> Optional[dict]:
-    """
-    Extract and parse JSON from LLM output. Handles:
-    - Markdown code blocks (```json ... ```)
-    - Prose before/after the JSON
-    - Trailing commas
-    - Common formatting issues
-    """
-    if not raw or not isinstance(raw, str):
-        return None
-
-    text = raw.strip()
-    # Strip markdown code blocks
-    text = re.sub(r"^```(?:json)?\s*", "", text)
-    text = re.sub(r"\s*```\s*$", "", text)
-    text = text.strip()
-
-    # Try to extract the first complete JSON object
-    start = text.find("{")
-    if start == -1:
-        return None
-
+def _find_json_boundary(text: str, start: int) -> int:
+    """Find the position of the closing brace that matches the opening brace at `start`."""
     depth = 0
     in_string = False
     escape = False
-    quote_char = None
-    end = -1
 
     for i, c in enumerate(text[start:], start):
         if escape:
@@ -41,48 +19,159 @@ def extract_json(raw: str) -> Optional[dict]:
             escape = True
             continue
         if in_string:
-            if c == quote_char:
+            if c == '"':
                 in_string = False
             continue
-        if c in '"\'':
+        if c == '"':
             in_string = True
-            quote_char = c
             continue
         if c == "{":
             depth += 1
         elif c == "}":
             depth -= 1
             if depth == 0:
-                end = i
-                break
+                return i
 
-    if end == -1:
-        return None
+    return -1
 
-    json_str = text[start : end + 1]
 
-    # Fix trailing commas (invalid in strict JSON) - repeat for nested structures
+def _try_parse(json_str: str) -> Optional[dict]:
+    """Attempt to parse a JSON string with progressive cleanup."""
+    # Fix trailing commas
+    cleaned = json_str
     while True:
-        new_str = re.sub(r",\s*}", "}", json_str)
+        new_str = re.sub(r",\s*}", "}", cleaned)
         new_str = re.sub(r",\s*]", "]", new_str)
-        if new_str == json_str:
+        if new_str == cleaned:
             break
-        json_str = new_str
-
-    # Fix single-quoted keys/strings (replace ' with " for JSON keys)
-    # Be careful: only do this if it looks like single-quoted JSON
-    if "'" in json_str and '"' not in json_str:
-        # Likely single-quoted - simple replace is risky for values with apostrophes
-        pass  # Skip - too error prone
+        cleaned = new_str
 
     try:
-        return json.loads(json_str)
+        return json.loads(cleaned)
     except json.JSONDecodeError:
         pass
 
-    # Last resort: try parsing after more aggressive cleanup
-    json_str = re.sub(r"[\x00-\x1f]", " ", json_str)  # Remove control chars
+    # Remove control characters (except \n \r \t which we'll handle)
+    cleaned = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", " ", cleaned)
     try:
-        return json.loads(json_str)
+        return json.loads(cleaned)
     except json.JSONDecodeError:
+        pass
+
+    return None
+
+
+def _try_repair_truncated(text: str) -> Optional[dict]:
+    """Attempt to repair truncated JSON by closing open structures."""
+    start = text.find("{")
+    if start == -1:
         return None
+
+    candidate = text[start:]
+
+    in_string = False
+    escape = False
+    open_braces = 0
+    open_brackets = 0
+    last_good_pos = -1
+
+    for i, c in enumerate(candidate):
+        if escape:
+            escape = False
+            continue
+        if c == "\\" and in_string:
+            escape = True
+            continue
+        if in_string:
+            if c == '"':
+                in_string = False
+            continue
+        if c == '"':
+            in_string = True
+            continue
+        if c == "{":
+            open_braces += 1
+        elif c == "}":
+            open_braces -= 1
+            if open_braces == 0 and open_brackets == 0:
+                last_good_pos = i
+                break
+        elif c == "[":
+            open_brackets += 1
+        elif c == "]":
+            open_brackets -= 1
+
+    if last_good_pos > 0:
+        return _try_parse(candidate[: last_good_pos + 1])
+
+    # JSON is truncated — try to close it
+    if in_string:
+        candidate += '"'
+        in_string = False
+
+    # Close any open arrays then braces
+    candidate += "]" * open_brackets
+    candidate += "}" * open_braces
+
+    # Try to trim back to last complete key-value pair
+    trimmed = candidate
+    for _ in range(5):
+        result = _try_parse(trimmed)
+        if result is not None:
+            return result
+        # Remove the last incomplete value/key and try again
+        last_comma = trimmed.rfind(",")
+        if last_comma == -1:
+            break
+        trimmed = trimmed[:last_comma]
+        # Re-close structures
+        ob = trimmed.count("{") - trimmed.count("}")
+        oq = trimmed.count("[") - trimmed.count("]")
+        if ob > 0 or oq > 0:
+            trimmed += "]" * max(0, oq) + "}" * max(0, ob)
+
+    return _try_parse(candidate)
+
+
+def extract_json(raw: str) -> Optional[dict]:
+    """
+    Extract and parse JSON from LLM output. Handles:
+    - Markdown code blocks (```json ... ```)
+    - Prose before/after the JSON
+    - Trailing commas
+    - Truncated JSON (best-effort repair)
+    """
+    if not raw or not isinstance(raw, str):
+        return None
+
+    text = raw.strip()
+
+    # Strip markdown code blocks (may appear anywhere, not just start/end)
+    text = re.sub(r"```(?:json)?\s*\n?", "", text)
+    text = text.strip()
+
+    # Quick check: try parsing the whole thing directly
+    if text.startswith("{"):
+        result = _try_parse(text)
+        if result is not None:
+            return result
+
+    # Find the first { and try brace-matching
+    start = text.find("{")
+    if start == -1:
+        return None
+
+    end = _find_json_boundary(text, start)
+
+    if end != -1:
+        json_str = text[start : end + 1]
+        result = _try_parse(json_str)
+        if result is not None:
+            return result
+
+    # Brace matching failed or parse failed — try truncation repair
+    result = _try_repair_truncated(text)
+    if result is not None:
+        return result
+
+    return None

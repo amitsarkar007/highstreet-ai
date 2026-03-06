@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Highstreet AI — Autonomous AI Workforce for SMBs",
   description:
-    "Multi-agent AI platform powered by Z.AI GLM-4-Plus. Built for bakeries, coffee shops, clinics and every business on the high street. Get instant operations, HR, adoption, and market intelligence recommendations.",
+    "Autonomous AI workforce for small businesses. Operations, HR, AI adoption, market intelligence. Powered by Z.AI GLM. Built for bakeries, coffee shops, clinics and every business on the high street.",
   keywords: [
     "AI",
     "small business",
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     "market intelligence",
     "AI adoption",
     "Z.AI",
-    "GLM-4-Plus",
+    "GLM",
   ],
   authors: [{ name: "Highstreet AI" }],
   icons: {
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Highstreet AI — Autonomous AI Workforce for SMBs",
     description:
-      "Multi-agent AI platform powered by Z.AI GLM-4-Plus. Get instant business recommendations.",
+      "Autonomous AI workforce for small businesses. Operations, HR, AI adoption, market intelligence. Powered by Z.AI GLM.",
     type: "website",
     siteName: "Highstreet AI",
   },
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Highstreet AI — Autonomous AI Workforce for SMBs",
     description:
-      "Multi-agent AI platform powered by Z.AI GLM-4-Plus. Get instant business recommendations.",
+      "Autonomous AI workforce for small businesses. Operations, HR, AI adoption, market intelligence. Powered by Z.AI GLM.",
   },
   robots: {
     index: true,
@@ -68,7 +68,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
         <script
@@ -77,7 +77,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="font-sans antialiased min-h-screen bg-white dark:bg-[#0f0f0f] text-[#1a1a1a] dark:text-[#e8e8e8]">
+      <body className="font-sans antialiased bg-white dark:bg-[#0f0f0f] text-[#1a1a1a] dark:text-[#e8e8e8]">
         {children}
       </body>
     </html>

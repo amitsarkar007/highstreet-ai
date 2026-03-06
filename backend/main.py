@@ -2,12 +2,14 @@ from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from pipeline.graph import run_pipeline
+from pipeline.graph import run_pipeline, run_conversation_turn
+from schemas.conversation import QueryRequest
 from logger import log_run
 from registry import AGENT_REGISTRY
+from collections import defaultdict
+from datetime import datetime, timedelta
 import os
 
 app = FastAPI(
@@ -18,7 +20,6 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# CORS enabled for frontend and cross-origin requests
 _cors_origins = os.getenv("CORS_ORIGINS", "*")
 app.add_middleware(
     CORSMiddleware,
@@ -27,27 +28,64 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class QueryRequest(BaseModel):
-    query: str
-    context: dict = {}
-    deploy: bool = False    # If True, triggers Lovable deploy + Stripe link creation
+# ── Rate limiting ────────────────────────────────────────────────────────
+
+_request_counts: dict[str, list[datetime]] = defaultdict(list)
+
+
+def is_rate_limited(client_ip: str, limit: int = 20, window_minutes: int = 10) -> bool:
+    now = datetime.utcnow()
+    window_start = now - timedelta(minutes=window_minutes)
+
+    _request_counts[client_ip] = [
+        t for t in _request_counts[client_ip] if t > window_start
+    ]
+
+    if len(_request_counts[client_ip]) >= limit:
+        return True
+
+    _request_counts[client_ip].append(now)
+    return False
+
+
+# ── Routes ───────────────────────────────────────────────────────────────
 
 @app.post("/api/query")
-async def handle_query(request: QueryRequest):
-    try:
-        result = await run_pipeline(
-            query=request.query,
-            context=request.context,
-            deploy=request.deploy
+async def handle_query(request_body: QueryRequest, request: Request):
+    client_ip = request.client.host
+    if is_rate_limited(client_ip):
+        raise HTTPException(
+            status_code=429,
+            detail="Too many requests. Please wait a moment before trying again.",
         )
-        log_run(request.query, result)
-        return result
+
+    try:
+        response = await run_conversation_turn(
+            message=request_body.message,
+            conversation_id=request_body.conversation_id,
+            context=request_body.context,
+        )
+
+        if response.result:
+            log_run(request_body.message, response.result)
+
+        return response
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/api/conversation/{conversation_id}")
+async def clear_conversation_route(conversation_id: str):
+    from store.conversations import clear_conversation
+    clear_conversation(conversation_id)
+    return {"cleared": True}
+
 
 @app.get("/api/agents")
 async def get_agents():
     return AGENT_REGISTRY
+
 
 @app.get("/api/health")
 async def health():
