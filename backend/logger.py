@@ -21,7 +21,10 @@ def log_run(query: str, result: dict):
         "confidence": result.get("confidence"),
         "adoption_score": result.get("adoption_score"),
         "deployed_url": result.get("deployed_url"),
-        "stripe_product_url": result.get("stripe_product_url")
+        "stripe_product_url": result.get("stripe_product_url"),
+        "model": "glm-4-plus",
+        "provider": "z.ai",
+        "fallback_used": result.get("fallback_used", False)
     }
     
     log_file = LOG_DIR / f"{datetime.utcnow().strftime('%Y-%m-%d')}.json"

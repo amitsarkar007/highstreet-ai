@@ -15,7 +15,7 @@ class AgentResponse(BaseModel):
     detected_role: str        # "founder" | "hr_manager" | "ops_lead" | "ceo"
     intent: str               # "generate_idea" | "check_adoption" | "deploy_product" etc.
     selected_agent: str
-    pipeline_trace: List[str] # ["orchestrator", "ceo_agent", "reviewer"]
+    pipeline_trace: List[str] # ["orchestrator", "operations_agent"|"hr_agent"|"adoption_agent"|"market_intelligence_agent", "reviewer"]
     timestamp: str
 
     # Optional enrichments

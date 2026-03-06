@@ -1,15 +1,14 @@
-# CEOClaw
+# Highstreet AI
 
-> Autonomous AI founder agent. Idea → Landing Page → Revenue. Powered by Z.AI GLM.
+> Autonomous AI workforce for small businesses. Idea → Landing Page → Revenue. Powered by Z.AI GLM.
 
 Built for UK AI Agent Hack EP4 x OpenClaw.
 
-## Prizes Targeting
+## Prize Targets
 
-- CEO Claw Challenge (£1,000)
-- Z.AI Bounty ($4,000 pool)
-- Anyway Track (Mac Mini)
-- FLock Track ($5,000 pool)
+- 🥇 **Z.AI Bounty** ($4,000 pool) — GLM-4-Plus powers all 6 agents across classification, generation, reasoning and orchestration
+- 🥇 **FLock Track** ($5,000 pool) — SDG 8: Decent Work & Economic Growth for 5.5M UK SMBs
+- 🏆 **Anyway Track** (Mac Mini) — Full agent tracing + Stripe Connect commercialisation
 
 ## Stack
 
@@ -20,6 +19,31 @@ Built for UK AI Agent Hack EP4 x OpenClaw.
 - **Tracing**: Anyway SDK (optional)
 - **Backend**: FastAPI
 - **Frontend**: Next.js 14
+
+## Z.AI Integration
+
+All agents are powered by Z.AI's GLM-4-Plus model via the Z.AI API.
+FLock API serves as an automatic fallback using open-source models.
+
+| Agent | GLM Usage Type |
+|-------|---------------|
+| Orchestrator Agent | Intent classification + role detection + routing logic |
+| Operations Agent | Workflow reasoning + operational recommendation generation |
+| HR & Wellbeing Agent | Policy interpretation + wellbeing response generation |
+| AI Adoption Optimizer | Scoring logic + automation gap analysis + ROI estimation |
+| Market Intelligence Agent | Trend synthesis + demand signal interpretation |
+| Reviewer Agent | Output validation + risk flagging + clarity improvement |
+
+**Model**: `glm-4-plus`  
+**Endpoint**: Z.AI v1 Chat Completions API  
+**Fallback**: FLock API (open-source models) — automatic, zero config  
+**Orchestration**: LangGraph multi-agent pipeline  
+
+### Why GLM-4-Plus?
+GLM-4-Plus powers the entire reasoning layer of Highstreet AI — from understanding 
+a bakery owner's inventory problem to generating a structured 4-week growth plan. 
+Each of the 6 agents uses GLM for a different reasoning task, demonstrating 
+the model's versatility across classification, generation, validation, and orchestration.
 
 ## Pipeline
 
@@ -41,7 +65,7 @@ User Query → Orchestrator → [CEO | Adoption | HR] Agent → Reviewer → Fin
 
 ```bash
 git clone https://github.com/amitsarkar007/ceo-claw.git
-cd ceo-claw
+cd ceo-claw  # or cd highstreet-ai if you've renamed the project folder
 cp .env.example .env
 ```
 
@@ -107,7 +131,7 @@ Create `.env` in the project root before running (copy from `.env.example`).
 ## Project Structure
 
 ```
-ceo-claw/
+highstreet-ai/
 ├── backend/                 # FastAPI
 │   ├── main.py              # Entry point, routes
 │   ├── agents/              # Orchestrator, CEO, Adoption, HR, Reviewer
@@ -138,16 +162,36 @@ ceo-claw/
 
 ---
 
-## Demo Script (5 min)
+## Demo Script (5 minutes)
 
-1. **Startup idea**: Enter *"I want to build a SaaS for HR teams struggling with AI adoption"*
-2. Check **"DEPLOY + CREATE STRIPE LINK"**
-3. Click **RUN AGENTS**
-4. Show: startup idea → landing page → **Build on Lovable** link → Stripe link
-5. **Adoption**: Enter *"Our company uses ChatGPT and Copilot but nobody tracks ROI"* → show adoption score
-6. **HR**: Enter *"I need to onboard 50 new employees to our AI tools"* → show guidance
+**The Character**: Meet Emma, owner of a coffee shop on the high street.
 
-**Note**: Lovable and Stripe links only appear when the **CEO agent** runs (idea/startup queries). HR and Adoption queries return guidance, not deployable products.
+**Step 1** — Enter this query:
+"How can I reduce pastry waste and better manage the morning rush in my coffee shop?"
+
+Hit Run. Walk the judge through the pipeline trace animating:
+ORCHESTRATOR → OPERATIONS AGENT → REVIEWER → OUTPUT
+
+**Step 2** — Show the output:
+- Business Profile card: coffee_shop / owner
+- Operations Agent recommendations
+- Next actions panel
+- Risks and assumptions
+
+**Step 3** — Enter a second query to show multi-agent routing:
+"I'm struggling to get my staff to use AI tools at my bakery — how do I measure if it's working?"
+
+This routes to the ADOPTION AGENT instead — show that the orchestrator picks the right specialist automatically.
+
+**Step 4** — Show the dashboard metrics panel:
+Active Agents: 4
+AI Adoption Score: 68%
+Estimated Time Saved: 8 hrs/week
+Recommended Next Automations: inventory tracking, shift scheduling, promotions
+
+**Closing line**:
+"Highstreet AI gives every small business owner their own digital workforce —
+without needing a single developer on staff."
 
 ---
 

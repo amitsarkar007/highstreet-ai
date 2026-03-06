@@ -10,7 +10,13 @@ from logger import log_run
 from registry import AGENT_REGISTRY
 import os
 
-app = FastAPI(title="CEOClaw API", version="1.0.0")
+app = FastAPI(
+    title="Highstreet AI",
+    description="Autonomous AI Workforce for Small and Medium Businesses. Powered by Z.AI GLM-4-Plus. Built for the High Street.",
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
 
 # CORS enabled for frontend and cross-origin requests
 _cors_origins = os.getenv("CORS_ORIGINS", "*")

@@ -3,7 +3,7 @@
 version: "3.9"
 
 services:
-  backend:
+  highstreet-ai-backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -14,7 +14,7 @@ services:
       - ./logs:/app/logs
     restart: unless-stopped
 
-  frontend:
+  highstreet-ai-frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -23,5 +23,5 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
     depends_on:
-      - backend
+      - highstreet-ai-backend
     restart: unless-stopped

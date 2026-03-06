@@ -11,7 +11,7 @@ import urllib.parse
 from datetime import datetime
 
 LOVABLE_BUILD_BASE = "https://lovable.dev/?autosubmit=true#"
-MOCK_DEPLOY_BASE = "https://demo.ceoclaw.dev"
+MOCK_DEPLOY_BASE = "https://demo.highstreet-ai.dev"
 
 
 def _build_prompt(landing_page: dict, startup_idea: dict) -> str:

@@ -5,7 +5,7 @@ from integrations.lovable import deploy_to_lovable
 from integrations.stripe import create_stripe_product_link
 
 CEO_SYSTEM = """
-You are CEOClaw, an autonomous AI founder agent. You help users:
+You are Highstreet AI, an autonomous AI founder agent. You help users:
 - Generate validated startup ideas with clear problem/solution/market framing
 - Create landing page content (headline, subheadline, 3 features, CTA, pricing tier)
 - Suggest marketing steps (SEO, content, outreach channels)
