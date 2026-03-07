@@ -19,8 +19,9 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Highstreet AI" }],
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
   },
   openGraph: {
     title: "Highstreet AI — Autonomous AI Workforce for SMBs",

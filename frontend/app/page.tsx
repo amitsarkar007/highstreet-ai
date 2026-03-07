@@ -1774,7 +1774,7 @@ export default function Home() {
       <header className="h-[56px] flex items-center justify-center px-4 bg-[#fafafa] dark:bg-[#111111] border-b border-[#eeeeee] dark:border-[#222222] flex-shrink-0 relative">
         <div className="flex items-center gap-3">
           <img
-            src="/favicon.svg"
+            src="/favicon.png"
             alt="Highstreet AI"
             className="h-8 w-8 rounded-lg"
           />
