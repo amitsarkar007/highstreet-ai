@@ -8,9 +8,29 @@ Built for **UK AI Agent Hack EP4 x OpenClaw**.
 
 ## Prize Targets
 
-- **Z.AI Bounty** ($4,000 pool) — GLM powers all agents across classification, generation, reasoning and orchestration
-- **FLock Track** ($5,000 pool) — SDG 8: Decent Work & Economic Growth for 5.5M UK SMBs
-- **Anyway Track** (Mac Mini) — Full agent tracing + Stripe Connect commercialisation
+### AI Agents for Good – Flock.io ($5,000)
+Highstreet AI deploys a coordinated digital workforce of AI agents that help small and medium-sized businesses improve productivity, reduce operational inefficiencies, and adopt AI safely. With 5.5M SMBs in the UK alone — coffee shops, clinics, accountants, local retailers — these businesses have historically been priced out of enterprise AI. Highstreet AI changes that, directly supporting SDG 8: Decent Work & Economic Growth through inclusive digital transformation.
+
+### Z.AI General Bounty ($4,000)
+Highstreet AI uses Z.AI's GLM model to power the entire reasoning layer — from intent classification and business-type detection in the Orchestrator, to workflow analysis in the Operations Agent, policy interpretation in the HR Agent, and output validation in the Reviewer. Every agent uses GLM for a different reasoning task (classification, generation, orchestration, validation), demonstrating the model's versatility across a real multi-agent production system.
+
+### CEO Claw Challenge – AfterQuery ($1,000)
+Highstreet AI acts as an AI business advisor for small business owners — helping them make data-driven decisions without a consultant on payroll. The platform analyses business workflows and delivers actionable recommendations on staffing, inventory planning, marketing strategy, and operational optimisation. In practice it functions as an AI co-founder: ask it a question in plain English, get a structured plan back.
+
+### AI Agent for Satellite Imagery Analytics – The Compression Company (£1,000)
+The Market Intelligence Agent is designed to incorporate geospatial and environmental signals — including satellite-derived indicators such as weather patterns, urban activity, and regional infrastructure changes — alongside business data for demand forecasting and operational planning. For example, a coffee shop could use weather data to anticipate increased demand during rainy mornings or seasonal foot-traffic shifts, enabling smarter inventory and staffing decisions. *(Note: current implementation uses publicly available weather and trend signals; full satellite data integration is a natural extension of this architecture.)*
+
+### Animoca Bounty ($1,000)
+Highstreet AI introduces a structured digital workforce: autonomous AI agents with defined roles, capabilities, and collaboration patterns operating within a business ecosystem. The Orchestrator coordinates specialist agents (Operations, HR, Market Intelligence, AI Adoption) the way a management layer coordinates a team — each agent contributing to outcomes neither could achieve alone. This agent-as-worker model is a concrete instantiation of autonomous digital agents operating in an economic environment.
+
+### AnyWay Bounty (Mac Mini)
+Highstreet AI instruments every agent pipeline step with the Anyway SDK, providing full observability into agent activities, workflow execution, and performance. The platform also tracks productivity metrics (AI adoption score, tasks completed by agents, estimated hours saved) and includes Stripe Connect for commercial monetisation — demonstrating a path from hackathon prototype to paid product.
+
+### Claw for Human – Imperial Blockchain ($500)
+Highstreet AI is designed as a human-centred platform that empowers small business owners rather than replacing their judgment. Business owners interact through natural language queries and receive structured, plain-English recommendations they can act on immediately — no ML expertise required. The system augments human decision-making; it does not automate it away.
+
+### Human for Claw – Imperial Blockchain ($500)
+The Reviewer Agent acts as a governance and validation layer across every pipeline run. Before any output reaches the user, it validates factual consistency, enforces plain English, checks UK-specific regulatory content, and flags risks. This explicit oversight mechanism ensures AI-generated recommendations are responsible, transparent, and trustworthy — not just fast.
 
 ---
 
